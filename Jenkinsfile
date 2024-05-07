@@ -14,11 +14,7 @@ pipeline{
                 cleanWs()
             }
         }
-        stage('Checkout from Git'){
-            steps{
-                git branch: 'main', url: 'https://github.com/ajayi-george/DevSecOps-Project.git'
-            }
-        }
+      
         stage("Sonarqube Analysis "){
             steps{
                 withSonarQubeEnv('sonar-server') {
