@@ -7,6 +7,12 @@ pipeline{
     }
     environment {
         SCANNER_HOME=tool 'sonar-scanner'
+        APP_NAME="netflix-clone"
+        RELEASE= "1.0.0"
+        DOCKER_USER="georgeao"
+        DOCKER_PASS="docker"
+        IMAGE_NAME= "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_TAG= "${RELEASE}-${BUILD_NUMBER}"
     }
     stages {
         stage('clean workspace'){
@@ -46,25 +52,31 @@ pipeline{
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage("Docker Build & Push"){
-            steps{
-                script{
-                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
-                       sh "docker build --build-arg TMDB_V3_API_KEY=93c063cd8adfe5ac8add285ecc465dfe -t netflix ."
-                       sh "docker tag netflix georgeao/netflix:latest "
-                       sh "docker push georgeao/netflix:latest "
+        
+        stage("Build & Push Docker Image") {
+            steps {
+                script {
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')
                     }
                 }
             }
+
         }
+        
         stage("TRIVY"){
             steps{
-                sh "trivy image georgeao/netflix:latest > trivyimage.txt" 
+                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} > trivyimage.txt" 
             }
         }
         stage('Deploy to container'){
             steps{
-                sh 'docker run -d -p 8081:80 georgeao/netflix:latest'
+                sh "docker run -d -p 8081:80 ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
     }
