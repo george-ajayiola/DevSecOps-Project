@@ -59,7 +59,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: DOCKER_REGISTRY_CREDENTIALS, toolName: 'docker') {
-                        sh "docker build --build-arg TMDB_V3_API_KEY=<yourapikey> -t ${IMAGE_NAME} ."
+                        sh "docker build --build-arg TMDB_V3_API_KEY=93c063cd8adfe5ac8add285ecc465dfe -t ${IMAGE_NAME} ."
                         sh "docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${IMAGE_TAG}"
                         sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                     }
