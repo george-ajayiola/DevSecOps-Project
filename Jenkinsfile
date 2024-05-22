@@ -9,13 +9,12 @@ pipeline {
         APP_NAME = "netflix-clone"
         RELEASE = "1.0.0"
         DOCKER_USER = "georgeao"
-        DOCKER_PASS = "docker"
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         DOCKER_REGISTRY_CREDENTIALS = 'docker' // Credentials ID for Docker registry
     }
     stages {
-        stage('clean workspace') {
+        stage('Clean workspace') {
             steps {
                 cleanWs()
             }
@@ -66,7 +65,7 @@ pipeline {
                 }
             }
         }
-        stage("TRIVY") {
+        stage("TRIVY Image Scan") {
             steps {
                 sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} > trivyimage.txt"
             }
@@ -75,6 +74,13 @@ pipeline {
             steps {
                 sh "docker run -d -p 8081:80 ${IMAGE_NAME}:${IMAGE_TAG}"
             }
+        }
+    }
+    post {
+        always {
+            emailext (
+                attachmentsPattern: 'trivyfs.txt, trivyimage.txt'
+            )
         }
     }
 }
