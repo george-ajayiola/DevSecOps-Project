@@ -81,6 +81,15 @@ pipeline {
     post {
         always {
             emailext (
+                subject: "Build Status: ${currentBuild.currentResult}",
+                body: """Build Details:
+                         - Job Name: ${env.JOB_NAME}
+                         - Build Number: ${env.BUILD_NUMBER}
+                         - Build Status: ${currentBuild.currentResult}
+                         - Build URL: ${env.BUILD_URL}
+
+                         Attached are the Trivy scan results for filesystem and Docker image.""",
+                to: 'george.ajayi@stu.cu.edu.ng',
                 attachmentsPattern: 'trivyfs.txt, trivyimage.txt'
             )
         }
