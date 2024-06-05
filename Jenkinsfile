@@ -14,6 +14,7 @@ pipeline {
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         DOCKER_REGISTRY_CREDENTIALS = 'docker' // Credentials ID for Docker registry
+        NVD_API_KEY = credentials('nvd-api-key') // Use the credentials ID for NVD API key
     }
     stages {
         stage('Clean workspace') {
@@ -47,7 +48,7 @@ pipeline {
         }
         stage('OWASP FS SCAN') {
             steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit --nvdApiKey ${NVD_API_KEY}', odcInstallation: 'DP-Check'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
@@ -89,7 +90,7 @@ pipeline {
                          - Build URL: ${env.BUILD_URL}
 
                          Attached are the Trivy scan results for filesystem and Docker image.""",
-                to: 'george.ajayi@stu.cu.edu.ng',
+                to: 'your-email@example.com',
                 attachmentsPattern: 'trivyfs.txt, trivyimage.txt'
             )
         }
